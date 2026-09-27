@@ -76,6 +76,7 @@ npx tsc --noEmit                  # typecheck (must pass clean)
 npm run seed                      # wipe + reseed demo data (idempotent — run before every demo)
 npm run concurrency-test          # 100 parallel joins -> 100 unique, gap-free tokens
 npm run booking-concurrency-test  # N students race for a capacity-K slot -> exactly K win
+npm run generate-qr-codes         # writes a QR PNG per service to qr-codes/ (see qr-codes/README.md)
 ```
 
 ## Key technical decisions

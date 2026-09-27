@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
     "concurrency-test": "tsx scripts/concurrency-test.ts",
-    "booking-concurrency-test": "tsx scripts/booking-concurrency-test.ts"
+    "booking-concurrency-test": "tsx scripts/booking-concurrency-test.ts",
+    "generate-qr-codes": "tsx scripts/generate-qr-codes.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -24,6 +25,7 @@
     "next": "16.3.6",
     "next-themes": "^0.4.6",
     "prisma": "7.10.0",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-qr-code": "^2.2.0",
@@ -40,6 +42,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/ws": "^8.18.1",
