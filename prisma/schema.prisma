@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STAFF
+  ADMIN
+}
+
+enum ServiceStatus {
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+enum TicketStatus {
+  WAITING
+  CALLED
+  SERVED
+  CANCELLED
+  NO_SHOW
+}
+
+enum QueueEventType {
+  JOIN
+  CANCEL
+  CALL_NEXT
+  SERVED
+  NO_SHOW
+  RECALL
+  PAUSE
+  RESUME
+  OPEN
+  CLOSE
+  SERVICE_CREATED
+  SERVICE_UPDATED
+  SLOT_CREATED
+  BOOKING_CREATED
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
+  BOOKING_CHECKED_IN
+  BOOKING_NO_SHOW
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  CONVERTED
+  NO_SHOW
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  queueEvents QueueEvent[]
+
+  @@map("users")
+}
+
+model Service {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  code            String
+  description     String?
+  location        String?
+  status          ServiceStatus @default(OPEN)
+  lastTokenNumber Int           @default(0)
+  tokenDate       DateTime      @db.Date
+  avgServiceSecs  Int?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  tickets     Ticket[]
+  queueEvents QueueEvent[]
+  slots       ServiceSlot[]
+  bookings    Booking[]
+
+  @@map("services")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  serviceId   String
+  tokenNumber Int
+  tokenDate   DateTime     @db.Date
+  holderName  String
+  studentId   String
+  secretHash  String
+  status      TicketStatus @default(WAITING)
+  issuedAt    DateTime     @default(now())
+  calledAt    DateTime?
+  servedAt    DateTime?
+  closedAt    DateTime?
+
+  service       Service      @relation(fields: [serviceId], references: [id])
+  queueEvents   QueueEvent[]
+  bookingSource Booking?
+
+  @@unique([serviceId, tokenDate, tokenNumber])
+  @@index([serviceId, tokenDate, status, tokenNumber])
+  @@map("tickets")
+}
+
+model ServiceSlot {
+  id          String   @id @default(cuid())
+  serviceId   String
+  startsAt    DateTime
+  endsAt      DateTime
+  capacity    Int
+  bookedCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  service  Service   @relation(fields: [serviceId], references: [id])
+  bookings Booking[]
+
+  @@unique([serviceId, startsAt])
+  @@index([serviceId, startsAt])
+  @@map("service_slots")
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  slotId            String
+  serviceId         String
+  holderName        String
+  studentId         String
+  secretHash        String
+  status            BookingStatus @default(BOOKED)
+  convertedTicketId String?       @unique
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  slot            ServiceSlot  @relation(fields: [slotId], references: [id])
+  service         Service      @relation(fields: [serviceId], references: [id])
+  convertedTicket Ticket?      @relation(fields: [convertedTicketId], references: [id])
+  queueEvents     QueueEvent[]
+
+  @@index([serviceId, studentId])
+  @@map("bookings")
+}
+
+model QueueEvent {
+  id        String         @id @default(cuid())
+  serviceId String
+  actorId   String?
+  ticketId  String?
+  bookingId String?
+  type      QueueEventType
+  createdAt DateTime       @default(now())
+
+  service Service  @relation(fields: [serviceId], references: [id])
+  actor   User?    @relation(fields: [actorId], references: [id])
+  ticket  Ticket?  @relation(fields: [ticketId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([serviceId, createdAt])
+  @@map("queue_events")
+}
