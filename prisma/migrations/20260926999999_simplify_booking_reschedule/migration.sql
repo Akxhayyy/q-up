@@ -17,7 +17,7 @@ DROP INDEX IF EXISTS "one_active_booking_per_student";
 ALTER TABLE "bookings" ALTER COLUMN "status" DROP DEFAULT;
 ALTER TABLE "bookings" ALTER COLUMN "status" TYPE "BookingStatus" USING ("status"::text::"BookingStatus");
 ALTER TABLE "bookings" ALTER COLUMN "status" SET DEFAULT 'BOOKED';
-DROP TYPE "BookingStatus_old";
+DROP TYPE IF EXISTS "BookingStatus_old";
 
 CREATE UNIQUE INDEX "one_active_booking_per_student"
 ON "bookings" ("serviceId", "studentId")
